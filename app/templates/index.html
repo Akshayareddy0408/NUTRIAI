@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ pages[page] }} · NutriAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='app.js', v='20261120-4') }}" defer></script>
+</head>
+<body class="dashboard" data-page="{{ page }}" data-account="{{ email }}" data-week-url="{{ url_for('main.index', page='week') }}">
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('main.index', page='home') }}"><span class="logo">N</span>NutriAI</a>
+    <nav aria-label="Dashboard">
+      {% set icons = {'home': '⌂', 'planner': '✦', 'week': '▦', 'nutrition': '▥', 'foods': '⌕', 'grocery': '☷', 'pantry': '⌂', 'mood': '☼', 'insights': '◈', 'diversity': '✿', 'hydration': '≈'} %}
+      {% for key, title in pages.items() %}
+      <a href="{{ url_for('main.index', page=key) }}" {% if key == page %}aria-current="page"{% endif %}>
+        <span aria-hidden="true">{{ icons[key] }}</span>{{ title }}
+      </a>
+      {% endfor %}
+    </nav>
+    <div class="account">
+      <span class="avatar" aria-hidden="true">{{ email[0]|upper }}</span>
+      <span class="email" title="{{ email }}">{{ email }}</span>
+      <button id="logout" type="button">Log out</button>
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <div class="workspace-topbar">
+      <span class="topbar-greeting">Your NutriAI space</span>
+      <div class="topbar-account"><span>{{ email }}</span><button class="logout-action" type="button">Log out <span aria-hidden="true">↗</span></button></div>
+    </div>
+    {% if page == 'home' %}
+    <header class="home-hero"><div class="home-copy"><span class="eyebrow">YOUR LITTLE DAILY RESET</span><h1>Hey, <span id="welcomeName">friend</span>! <span class="wave">✿</span></h1><p>Small, nourishing choices add up. Let's make today feel good.</p><blockquote id="dailyQuote">“Take care of your body. It's the only place you have to live.”</blockquote><a class="btn primary" href="{{ url_for('main.index', page='planner') }}">Build my meal plan <span aria-hidden="true">→</span></a></div></header>
+    <section class="streak-banner panel"><div class="streak-flame">🔥</div><div><span class="eyebrow">YOUR WELLNESS STREAK</span><h2><span id="streakCount">1</span> day glow-up streak</h2><p id="streakMessage">You showed up for yourself today. Keep it gentle and keep it going.</p></div><div class="streak-dots" id="streakDots" aria-label="Last seven days"></div></section>
+    <section class="home-section"><div class="section-heading"><div><span class="eyebrow">A QUICK LOOK</span><h2>Your wellness snapshot</h2></div><a href="{{ url_for('main.index', page='nutrition') }}">View nutrition →</a></div><div class="home-metrics"><article class="home-metric lilac"><span class="metric-icon">🍽️</span><span class="metric-label">Meal plan</span><strong id="homeMeals">Not started</strong><small>Build a week that works for you</small></article><article class="home-metric peach"><span class="metric-icon">💧</span><span class="metric-label">Water check-in</span><strong id="homeWater">0 servings</strong><small>Log your water in Hydration Hub</small></article><article class="home-metric mint"><span class="metric-icon">🥦</span><span class="metric-label">Daily energy plan</span><strong id="homeCalories">—</strong><small id="homeCaloriesHint">Your plan average will appear here</small></article><article class="home-metric butter"><span class="metric-icon">🌈</span><span class="metric-label">Food variety</span><strong id="homeVariety">—</strong><small>Different dishes in your week</small></article></div></section>
+    <section class="home-section"><div class="section-heading"><div><span class="eyebrow">YOUR PLAN AT A GLANCE</span><h2>Progress, not perfection</h2></div></div><div class="panel progress-panel" id="homeProgress"><div class="progress-empty">Create a weekly meal plan to see your nutrition progress here. 🌱</div></div></section>
+    <section class="home-section inspiration-row"><div class="inspiration-card"><span>🥕</span><div><h2>A little inspiration</h2><p>Eat colorful, stay curious, and celebrate the small wins.</p></div></div><div class="inspiration-card second"><span>✨</span><div><h2>Make it yours</h2><p>Save favorite dishes and explore new combinations in the Food Catalog.</p></div></div></section>
+    {% elif page == 'planner' %}
+    <header class="hero">
+      <div>
+        <h1>Plan your meals<br>for the week.</h1>
+        <p>Choose a diet and enter your profile to get seven days of meals from the NutriAI food catalog.</p>
+      </div>
+    </header>
+    <form id="profileForm" class="panel form-panel">
+      <h2>Your profile</h2>
+      <div class="form-grid">
+        <label>Full name<input name="name" type="text" maxlength="80" placeholder="Enter your name" required></label>
+        <label>Age<input name="age" type="number" min="18" max="100" value="25" required></label>
+        <label>Height (cm)<input name="height" type="number" min="100" max="230" step="any" value="165" required></label>
+        <label>Weight (kg)<input name="weight" type="number" min="25" max="300" step="any" value="65" required></label>
+        <label>Diet<select name="diet"><option value="vegetarian">Vegetarian</option><option value="vegan">Vegan</option><option value="non-vegetarian">Non-vegetarian</option></select></label>
+        <label>Activity<select name="activity"><option value="low">Low</option><option value="light">Light</option><option value="moderate" selected>Moderate</option><option value="high">High</option></select></label>
+        <label>Goal<select name="goal"><option value="maintain">Maintain</option><option value="lose">Lose weight</option><option value="gain">Gain weight</option></select></label>
+      </div>
+      <div class="form-actions">
+        <span>For adults aged 18–100</span><button class="btn primary" type="submit">Generate meal plan <span aria-hidden="true">→</span></button>
+      </div>
+    </form>
+    {% else %}
+    <header class="page-header {{ page }}">
+      <div><h1>{{ pages[page] }}</h1>
+      <p>{{ {'week': 'Browse your meals or swap a dish.', 'nutrition': 'Compare planned calories with your estimated daily target.', 'foods': 'Search dishes and open their nutrition and ingredient details.', 'grocery': 'Check off ingredients as you shop.', 'pantry': 'Turn the ingredients you have into your next meal.', 'mood': 'Find a dish that fits what you feel like eating.', 'insights': 'Explore nutrition data recorded in your meal plan.', 'diversity': 'See how much variety your weekly plan contains.', 'hydration': 'Keep a simple record of your water servings.'}[page] }}</p></div>
+      {% if page == 'week' %}<div id="weekActions" class="week-actions" hidden>
+        <button id="printPlan" class="btn" type="button">Print week</button>
+        <button id="regenerate" class="btn primary" type="button">Generate another week</button>
+      </div>{% endif %}
+    </header>
+    {% if page in ['week', 'nutrition', 'grocery'] %}
+    <div id="emptyPlan" class="panel empty" hidden><h2>Your plan starts here</h2><p>Generate a meal plan to use this page.</p><a class="btn primary" href="{{ url_for('main.index', page='home') }}">Go to planner</a></div>
+    {% endif %}
+    {% if page == 'week' %}
+    <div id="dayPicker" class="day-picker" role="group" aria-label="Choose a day" hidden>
+      <button class="btn" type="button" data-show-day="all" aria-pressed="true">Full week</button>
+      {% for day in range(1, 8) %}
+      <button class="btn" type="button" data-show-day="{{ day }}" aria-pressed="false">Day {{ day }}</button>
+      {% endfor %}
+    </div>
+    <div id="weekGrid" class="week-grid"></div>
+    {% elif page == 'nutrition' %}
+    <div id="nutritionContent" hidden>
+      <div id="nutritionMetrics" class="metrics"></div>
+      <section class="panel chart-panel">
+        <h2>Calories by day</h2><p id="chartLegend"></p><div id="chart"></div>
+      </section>
+    </div>
+    {% elif page == 'foods' %}
+    <div class="catalog-views" role="group" aria-label="Catalog view">
+      <button id="allDishes" class="btn" type="button" aria-pressed="true">All dishes</button>
+      <button id="savedDishes" class="btn" type="button" aria-pressed="false">Saved dishes</button>
+    </div>
+    <form id="catalogForm" class="panel catalog-controls">
+      <label>Dish name<input name="q" type="search" placeholder="Search for a dish"></label>
+      <label>Diet<select name="diet"><option value="all">All diets</option><option value="vegetarian">Vegetarian</option><option value="vegan">Vegan</option><option value="non-vegetarian">Non-vegetarian</option><option value="egg">Egg</option></select></label>
+      <button class="btn primary" type="submit">Search</button>
+    </form>
+    <p id="catalogStatus" class="catalog-status" role="status"></p>
+    <div id="catalog" class="food-grid"></div>
+    <div id="pagination" class="pagination" hidden>
+      <button id="previous" class="btn">Previous</button><span id="pageNumber"></span><button id="next" class="btn">Next</button>
+    </div>
+    {% elif page == 'pantry' %}
+    <section class="panel discover-panel">
+      <h2>Smart Pantry Finder</h2><p class="muted">Enter ingredients you already have. Matches are based on the catalog ingredient text.</p>
+      <form id="pantryForm" class="discover-form"><label>Ingredients, separated by commas<input name="ingredients" placeholder="e.g. rice, tomato, onion" required></label><label>Diet<select name="diet"><option value="all">All diets</option><option value="vegetarian">Vegetarian</option><option value="vegan">Vegan</option><option value="non-vegetarian">Non-vegetarian</option></select></label><button class="btn primary">Find dishes</button></form>
+      <div id="pantryResults" class="discover-results" aria-live="polite"></div>
+    </section>
+    {% elif page == 'mood' %}
+    <section class="panel discover-panel">
+      <h2>Food Mood Matcher</h2><p class="muted">Choose the kind of dish you feel like having. This is a preference filter, not health advice.</p>
+      <form id="moodForm" class="discover-form"><label>I'm in the mood for<select name="mood"><option value="comfort">Comfort food</option><option value="spicy">Something spicy</option><option value="refreshing">Something refreshing</option><option value="quick">Something quick</option><option value="protein">Protein-containing dishes</option></select></label><label>Diet<select name="diet"><option value="all">All diets</option><option value="vegetarian">Vegetarian</option><option value="vegan">Vegan</option><option value="non-vegetarian">Non-vegetarian</option></select></label><button class="btn primary">Find my matches</button></form>
+      <div id="moodResults" class="discover-results" aria-live="polite"></div>
+    </section>
+    {% elif page == 'insights' %}
+    <section class="panel discover-panel">
+      <h2>Nutrition Pattern Explorer</h2><p class="muted">Review the recorded nutrition totals in your plan and check whether any values are missing. This is not a deficiency diagnosis.</p>
+      <button id="nutritionInsightsButton" class="btn primary" type="button">Check nutrition data</button><div id="nutritionInsightsResults" class="discover-results" aria-live="polite"></div>
+    </section>
+    {% elif page == 'diversity' %}
+    <section class="panel discover-panel">
+      <h2>Weekly Food Diversity</h2><p class="muted">A simple view of how many different dishes appear in your generated plan.</p>
+      <button id="diversityButton" class="btn primary" type="button">Analyse my weekly plan</button><div id="diversityResults" class="discover-results" aria-live="polite"></div>
+    </section>
+    {% elif page == 'hydration' %}
+    <section class="hydration-page">
+      <div class="hydration-hero panel">
+        <div class="aqua-character" id="aquaPet" aria-label="Aqua virtual hydration pet"><span class="aqua-face" id="aquaFace">◡</span><span class="aqua-sparkle">✦</span></div>
+        <div class="aqua-copy"><span class="eyebrow">YOUR HYDRATION COMPANION</span><h2>Meet Aqua! 💧</h2><p id="aquaMessage" class="muted">Let's make today a little more refreshing.</p><span class="aqua-level" id="aquaLevel">💧 Tiny Drop · Level 1</span></div>
+      </div>
+      <div class="hydration-stats">
+        <article class="panel hydration-stat"><span>Today's water</span><strong id="waterMl">0 ml</strong><small id="waterCount">0 servings logged today</small></article>
+        <article class="panel hydration-stat"><span>Daily goal</span><strong id="waterGoalText">2,000 ml</strong><small id="waterRemaining">2,000 ml to go</small></article>
+        <article class="panel hydration-stat"><span>Aqua experience</span><strong id="aquaXp">0 XP</strong><small id="aquaStreak">Start your streak today</small></article>
+      </div>
+      <section class="panel hydration-main">
+        <div class="section-heading"><div><span class="eyebrow">YOUR DAILY PROGRESS</span><h2>Hydration Check-in</h2></div><span class="hydration-percent" id="waterPercent">0%</span></div>
+        <div class="hydration-track"><div id="waterProgress" class="hydration-fill"></div></div>
+        <label class="goal-label" for="waterGoal">Your personal daily goal (ml)</label><div class="goal-controls"><input id="waterGoal" type="number" min="250" max="6000" step="250" value="2000"><button id="saveWaterGoal" class="btn" type="button">Save goal</button></div>
+        <h3>Quick add a drink</h3><div class="water-quick-add"><button class="water-add" data-ml="150" type="button">+150 <small>ml</small></button><button class="water-add" data-ml="250" type="button">+250 <small>ml</small></button><button class="water-add" data-ml="350" type="button">+350 <small>ml</small></button><button class="water-add" data-ml="500" type="button">+500 <small>ml</small></button></div>
+        <div class="hydration-actions"><button id="waterMinus" class="btn" type="button">↶ Undo last drink</button><button id="waterReset" class="btn" type="button">Clear today's log</button></div>
+        <div id="waterLog" class="water-log" aria-live="polite"></div>
+      </section>
+      <section class="panel aqua-rewards"><div class="section-heading"><div><span class="eyebrow">LITTLE WINS</span><h2>Aqua's rewards</h2></div><span class="aqua-level" id="aquaRewardLevel">Level 1</span></div><div class="aqua-xp-track"><div id="aquaXpProgress"></div></div><p class="muted" id="aquaNextReward">Log drinks to earn XP and cheer Aqua up.</p><div class="aqua-badges" id="hydrationBadges"></div></section>
+      <p class="hydration-hint">Your logs stay in this browser on this device. Hydration needs vary; choose a personal goal that suits you.</p>
+    </section>
+    {% elif page == 'grocery' %}
+    <section id="grocerySummary" class="panel grocery-summary" aria-labelledby="shoppingTitle" hidden>
+      <div class="shopping-progress">
+        <h2 id="shoppingTitle">Shopping progress</h2>
+        <p id="groceryProgressText" role="status"></p>
+        <progress id="groceryProgress" aria-labelledby="shoppingTitle" value="0" max="1"></progress>
+      </div>
+      <div class="shopping-filters">
+        <label>Find an ingredient<input id="ingredientSearch" type="search" placeholder="Search your list"></label>
+        <label class="shopping-toggle"><input id="outstandingOnly" type="checkbox"><span>Show unchecked only</span></label>
+      </div>
+    </section>
+    <p id="groceryEmpty" class="panel grocery-empty" hidden></p>
+    <div id="groceryList" class="panel grocery" hidden></div>
+    {% endif %}
+    {% endif %}
+    <p id="status" class="status" role="status" hidden></p>
+  </main>
+  <dialog id="dish" aria-labelledby="dishTitle">
+    <form method="dialog"><button class="btn dismiss" aria-label="Close dish details">×</button></form>
+    <div id="dishDetails"></div>
+  </dialog>
+</body>
+</html>
+
+

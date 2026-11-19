@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NutriAI — {{ 'Welcome back' if mode == 'login' else 'Join NutriAI' }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-page">
+<div class="auth-shell">
+  <section class="auth-story">
+    <a class="auth-brand" href="{{ url_for('main.login_page') }}"><span class="logo">N</span><span>NutriAI<span class="brand-period">.</span></span></a>
+    <div class="story-copy"><span class="eyebrow">A LITTLE GOODNESS, EVERY DAY</span><h1>Eat well.<br><em>Feel wonderful.</em></h1><p>Your everyday companion for happier, healthier food choices.</p></div>
+    <div class="auth-doodle doodle-bowl" aria-hidden="true"><span>🥑</span><i>✦</i><b>♡</b><small>fresh & lovely</small></div>
+    <div class="quote-card"><span class="quote-mark">“</span><p>Take care of your body. It's the only place you have to live.</p><small>— Jim Rohn</small></div>
+    <div class="auth-spark spark-one">✳</div><div class="auth-spark spark-two">✦</div>
+  </section>
+  <section class="auth-form-side">
+    <div class="auth-card">
+      <span class="welcome-pill">🌼 YOUR HEALTHY SPACE</span>
+      <h2>{{ 'Welcome back!' if mode == 'login' else 'Let’s get started!' }}</h2>
+      <p class="auth-subtitle">{{ 'Log in and pick up where your wellness journey left off.' if mode == 'login' else 'Create your account and make every meal count.' }}</p>
+      <div id="authMessage" class="auth-message" role="status"></div>
+      <form id="authForm">
+        <label>Email address<div class="input-wrap"><span>✉</span><input id="email" type="email" autocomplete="email" placeholder="you@example.com" required></div></label>
+        <label>Password<div class="input-wrap"><span>✧</span><input id="password" type="password" autocomplete="{{ 'current-password' if mode == 'login' else 'new-password' }}" placeholder="At least 6 characters" minlength="6" required></div></label>
+        <button class="btn primary auth-btn" type="submit">{{ 'Log in to NutriAI' if mode == 'login' else 'Create my account' }} <span>→</span></button>
+      </form>
+      {% if mode == 'login' %}<p class="switch">New to NutriAI? <a href="{{ url_for('main.signup_page') }}">Create an account</a></p>
+      {% else %}<p class="switch">Already have an account? <a href="{{ url_for('main.login_page') }}">Log in</a></p>{% endif %}
+      <p class="auth-footnote">Made with care, for your everyday wellbeing <span>♥</span></p>
+    </div>
+  </section>
+</div>
+<script>
+const mode={{ mode|tojson }};
+const form=document.getElementById('authForm');
+const msg=document.getElementById('authMessage');
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault(); msg.className='auth-message'; msg.textContent='';
+  const button=form.querySelector('button'); button.disabled=true;
+  const endpoint=mode==='login'?'/api/login':'/api/signup';
+  try{
+    const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('email').value,password:document.getElementById('password').value})});
+    const text=await r.text();
+    let d;
+    try{d=text?JSON.parse(text):{};}catch{throw new Error(`Server returned HTTP ${r.status} instead of JSON. Check the Flask terminal.`);}
+    if(!r.ok){msg.className='auth-message error';msg.textContent=d.error||'Something went wrong.';return;}
+    if(mode==='login'){window.location.href='/dashboard';return;}
+    msg.className='auth-message success';msg.textContent=d.message||'Account created. Redirecting to login...';
+    setTimeout(()=>window.location.href='/login',700);
+  }catch(err){msg.className='auth-message error';msg.textContent=err.message||'Could not connect to the server.';}
+  finally{button.disabled=false;}
+});
+</script>
+</body>
+</html>
